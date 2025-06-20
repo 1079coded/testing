@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JustOpinions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transitions for GSAP animations */
+        }
+
+        .section {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .section.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .content-container {
+            max-width: 800px;
+            width: 100%;
+            text-align: justify;
+            margin: 0 auto;
+        }
+
+        /* Added to center article list and content for better visual appeal */
+        #articles .content-container, .article-content .content-container {
+            text-align: center;
+        }
+
+        #home {
+            text-align: center;
+        }
+
+        #home h1 {
+            font-family: 'Akkurat', 'Arial', sans-serif;
+            font-size: 4rem;
+        }
+
+        #home .just {
+            font-weight: 800;
+            font-style: italic;
+        }
+
+        #home .opinions {
+            font-weight: 400;
+        }
+
+        #about p, .article-content p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            text-align: justify; /* Keep paragraphs justified for readability */
+        }
+
+        /* Modified to allow scrolling in Articles section and article content when content overflows */
+        #articles, .article-content {
+            overflow-y: auto; /* Enable vertical scrolling for overflow */
+            height: calc(100vh - 120px); /* Adjust height to account for nav and date-time padding */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Start content at top for scrolling */
+            padding: 20px;
+        }
+
+        /* Ensure content container fits within scrollable area */
+        #articles .content-container, .article-content .content-container {
+            max-height: 100%;
+        }
+
+        #articles ul {
+            list-style: none;
+            text-align: center;
+        }
+
+        #articles li {
+            margin: 1rem 0;
+        }
+
+        #articles a, .back-button, nav a {
+            color: inherit; /* Use parent color to adapt to body text color changes */
+            text-decoration: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        #articles a:hover, .back-button:hover, nav a:hover {
+            text-decoration: underline;
+        }
+
+        .article-content h2 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 1rem;
+            font-size: 1rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        nav {
+            position: fixed;
+            bottom: 80px;
+            width: 100%;
+            text-align: center;
+        }
+
+        nav a {
+            margin: 0 20px;
+            font-size: 1.2rem;
+        }
+
+        #date-time {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            font-family: 'Akkurat', 'Arial', sans-serif;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* New preloader styles */
+        .loading-screen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: #000 !important;
+            color: #fff !important;
+            pointer-events: none !important;
+            z-index: 9999 !important;
+            opacity: 1 !important;
+        }
+
+        .loading-screen .counter {
+            position: fixed;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            height: 40px;
+            font-size: 40px;
+            line-height: 42px;
+            font-weight: 100;
+            z-index: 10000;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .loading-screen .counter-1,
+        .loading-screen .counter-2,
+        .loading-screen .counter-3 {
+            position: relative;
+            top: -5px;
+        }
+
+        .loading-screen .num1offset1 { right: -4px; }
+        .loading-screen .num1offset { right: -10px; }
+
+        .loading-screen .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 1px;
+            transform: translate(-50%, -50%);
+            background: rgb(80, 80, 80);
+        }
+
+        .loading-screen .loader-bar {
+            background: #fff;
+            width: 0;
+            height: 1px;
+        }
+
+        /* Responsive design adjustments for smaller screens */
+        @media (max-width: 768px) {
+            #home h1 {
+                font-size: 3rem;
+            }
+
+            .content-container {
+                max-width: 90%;
+            }
+
+            /* Adjusted height for Articles section on smaller screens */
+            #articles, .article-content {
+                height: calc(100vh - 100px); /* Reduce height to fit smaller nav padding */
+                padding: 15px;
+            }
+
+            nav {
+                bottom: 60px;
+            }
+
+            nav a {
+                font-size: 1rem;
+                margin: 0 15px;
+            }
+
+            #date-time {
+                font-size: 0.9rem;
+                top: 30px;
+                right: 30px;
+            }
+
+            /* Adjust preloader counter size for smaller screens */
+            .loading-screen .counter {
+                font-size: 30px;
+                line-height: 32px;
+                height: 32px;
+            }
+
+            .loading-screen .loader {
+                width: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #home h1 {
+                font-size: 2.5rem;
+            }
+
+            #articles a, .back-button, nav a {
+                font-size: 1rem;
+            }
+
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+
+            #articles, .article-content {
+                padding: 10px;
+            }
+
+            /* Further adjust preloader counter size for very small screens */
+            .loading-screen .counter {
+                font-size: 24px;
+                line-height: 26px;
+                height: 26px;
+            }
+
+            .loading-screen .loader {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- New preloader HTML -->
+    <div class="loading-screen">
+        <div class="loader">
+            <div class="loader-bar"></div>
+        </div>
+        <div class="counter">
+            <div class="counter-1 digit">
+                <div class="num">0</div>
+                <div class="num num1offset">1</div>
+            </div>
+            <div class="counter-2 digit">
+                <div class="num">0</div>
+                <div class="num num1offset1">1</div>
+                <div class="num">2</div>
+                <div class="num">3</div>
+                <div class="num">4</div>
+                <div class="num">5</div>
+                <div class="num">6</div>
+                <div class="num">7</div>
+                <div class="num">8</div>
+                <div class="num">9</div>
+                <div class="num">0</div>
+            </div>
+            <div class="counter-3 digit">
+                <div class="num">0</div>
+                <div class="num">1</div>
+                <div class="num">2</div>
+                <div class="num">3</div>
+                <div class="num">4</div>
+                <div class="num">5</div>
+                <div class="num">6</div>
+                <div class="num">7</div>
+                <div class="num">8</div>
+                <div class="num">9</div>
+                <div class="num">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="date-time"></div>
+
+    <section id="home" class="section">
+        <h1><span class="just">Just</span><span class="opinions">Opinions</span></h1>
+    </section>
+
+    <section id="about" class="section">
+        <div class="content-container">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+            <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+        </div>
+    </section>
+
+    <section id="articles" class="section">
+        <div class="content-container">
+            <ul>
+                <li><a href="#" data-article="article1">Understanding Italy's 2025 Referendum: What's at Stake</a></li>
+                <li><a href="#" data-article="article2">Exploring the Cosmos</a></li>
+                <li><a href="#" data-article="article3">Sustainable Living</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="article1" class="section article-content">
+        <div class="content-container">
+            <h2>Understanding Italy's 2025 Referendum: What's at Stake</h2>
+            <p>In June 2025, Italy finds itself at a crossroads—one that has sparked both debate and reflection across the country and among its diaspora. A national referendum is asking citizens to decide whether to repeal or uphold several key laws related to employment, small business regulation, and citizenship. While the questions on the ballot are technical, their implications are deeply political, economic, and social. This article explores why this referendum has emerged now, what it seeks to change, and what it reveals about Italy’s current state.</p>
+            <p>This is not just about legal clauses or labor codes. At its core, this referendum is a mirror of Italy’s identity crisis in a rapidly changing world. In the aftermath of economic strain, demographic shifts, and rising social inequalities, lawmakers and citizen initiatives have brought to the table a series of proposals aimed at reshaping the framework of labor rights and integration. These aren't abstract reforms—they touch the lives of workers, small business owners, immigrants, and young Italians trying to enter a job market marked by instability.</p>
+            <p>Much of the legal content in the referendum stems from laws passed in the 1990s and 2000s that tried to liberalise the job market. These changes aimed to give businesses more flexibility in hiring and firing, particularly through fixed-term contracts and by limiting employer liability in subcontracting. However, critics argue these measures have come at the cost of job security and fairness—especially for young workers and those employed by small firms or through third-party contractors.</p>
+            <p>Youth unemployment continues to be a pressing issue in Italy. In April 2025, the unemployment rate among young people aged 15–24 stood at around 21.1%, a figure that—while slightly improved compared to the pandemic years—still significantly exceeds the EU average. This level of joblessness among younger generations has deepened the urgency for reform and raised questions about the effectiveness of current labor policies.</p>
+            <p>Interestingly, the referendum arrived shortly after the Italian government passed a controversial measure in May 2025 to allocate funding for new entrepreneurs—particularly targeting young people and small business startups. Supporters see this initiative as a way to revitalise the economy and promote innovation. Critics, however, argue that without deeper structural reform—such as addressing the difficulty of firing or hiring under current labor law—the measure risks being symbolic rather than transformative. This policy may well have helped reignite the push for a public vote on labor protections and contractual norms.</p>
+            <p>One of the most hotly debated issues is the reform to the so-called "tutele crescenti"—a system introduced to gradually increase worker protections based on job tenure. Proponents of repealing it say it hasn’t delivered fair security, while opponents fear a return to rigid labor rules that discourage hiring altogether. Similarly, changes to severance pay limits and fixed-term contract regulations raise questions about what kind of labor model Italy wants: one that encourages business agility, or one that guarantees long-term stability?</p>
+            <p>The fifth question on the referendum—whether to halve the number of years required for a foreign resident to apply for citizenship—brings a different, but equally emotional, tone. It touches on the question of who gets to be Italian and when. For many, especially children of immigrants and long-term residents, the current 10-year waiting period feels excessive. But others see the existing system as a necessary filter for integration.</p>
+            <p>The referendum hasn’t emerged in a vacuum. Italy’s youth unemployment remains high compared to European averages, and public frustration over precarious work conditions is growing. These legal changes, whether repealed or not, won’t be silver bullets—but they signal a demand for a deeper transformation. Behind the legal jargon are real lives, real families, and real hopes for a more equitable society.</p>
+            <p>This vote, then, is more than a legal procedure. It is a rare chance for Italians—whether in Rome, Milan, or living abroad in cities like London or Toronto—to express a vision for the future. Whether one votes Yes or No, the challenge is to do so with full awareness of what is at stake: not just policies, but the values that will shape the next generation of Italian society.</p>
+            <a href="#" class="back-button" data-back="articles">Back to Articles</a>
+        </div>
+    </section>
+
+    <section id="article2" class="section article-content">
+        <div class="content-container">
+            <h2>Exploring the Cosmos</h2>
+            <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+            <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</p>
+            <a href="#" class="back-button" data-back="articles">Back to Articles</a>
+        </div>
+    </section>
+
+    <section id="article3" class="section article-content">
+        <div class="content-container">
+            <h2>Sustainable Living</h2>
+            <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti.</p>
+            <p>Quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa.</p>
+            <p>Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi.</p>
+            <a href="#" class="back-button" data-back="articles">Back to Articles</a>
+        </div>
+    </section>
+
+    <nav>
+        <a href="#" data-section="home">Home</a>
+        <a href="#" data-section="about">About</a>
+        <a href="#" data-section="articles">Articles</a>
+    </nav>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // New preloader logic
+            const loadingScreen = document.querySelector(".loading-screen");
+            gsap.set(loadingScreen, { opacity: 1, display: "block", zIndex: 9999 });
+
+            // Function to animate a counter element
+            function animateCounter(counter, targetValue, duration, delay = 0) {
+                if (!counter) {
+                    console.warn("Counter element not found.");
+                    return;
+                }
+                const numHeight = counter.querySelector(".num")?.clientHeight || 40;
+                const totalDistance = targetValue * numHeight;
+                gsap.to(counter, {
+                    y: -totalDistance,
+                    duration: duration,
+                    delay: delay,
+                    ease: "power2.inOut"
+                });
+            }
+
+            // Get counter elements
+            const counter1 = document.querySelector(".counter-1"); // Tens place
+            const counter2 = document.querySelector(".counter-2"); // Ones place
+            const counter3 = document.querySelector(".counter-3"); // Hundredths place
+
+            // Animate counters to simulate counting from 000 to 100
+            if (!counter1 || !counter2 || !counter3) {
+                console.warn("One or more counter elements missing.");
+            } else {
+                animateCounter(counter3, 0, 0); // Counter-3 stays at 0
+                animateCounter(counter2, 10, 5); // Counter-2 to second '0' (index 10)
+                animateCounter(counter1, 1, 5); // Counter-1 to '1'
+            }
+
+            // Animate the loader bar
+            const loaderBar = document.querySelector(".loader-bar");
+            if (loaderBar) {
+                gsap.to(loaderBar, {
+                    width: "100%",
+                    duration: 5,
+                    ease: "linear"
+                });
+            } else {
+                console.warn("Loader bar element not found.");
+            }
+
+            // Fade out the loading screen and initialize home section
+            gsap.to(loadingScreen, {
+                opacity: 0,
+                duration: 1,
+                delay: 6,
+                ease: "power4.inOut",
+                onComplete: () => {
+                    gsap.set(loadingScreen, { display: "none" });
+                    // Initialize home section animation
+                    const homeSection = document.getElementById('home');
+                    homeSection.classList.add('active');
+                    homeSection.style.visibility = 'visible';
+                    gsap.fromTo(homeSection, 
+                        { opacity: 0 },
+                        { 
+                            opacity: 1, 
+                            duration: 0.5, 
+                            ease: 'power2.in'
+                        }
+                    );
+                }
+            });
+
+            // Date and time logic
+            const dateTime = document.getElementById('date-time');
+            function updateDateTime() {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                const day = days[now.getDay()];
+                const date = now.getDate();
+                const month = months[now.getMonth()];
+                const dateTimeStr = `${day} ${date} ${month} / ${hours}:${minutes}`;
+                dateTime.textContent = dateTimeStr;
+            }
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            // Section navigation logic
+            const navLinks = document.querySelectorAll('nav a');
+            const articleLinks = document.querySelectorAll('#articles a');
+            const backButtons = document.querySelectorAll('.back-button');
+            const sections = document.querySelectorAll('.section');
+
+            const switchSection = (targetSection, currentSection) => {
+                const isEnteringArticle = targetSection.classList.contains('article-content');
+                const isLeavingArticle = currentSection && currentSection.classList.contains('article-content');
+
+                if (isEnteringArticle) {
+                    gsap.to(document.body, {
+                        backgroundColor: '#ffffff',
+                        color: '#000000',
+                        duration: 0.5,
+                        ease: 'power2.in'
+                    });
+                } else if (isLeavingArticle) {
+                    gsap.to(document.body, {
+                        backgroundColor: '#000000',
+                        color: '#ffffff',
+                        duration: 0.5,
+                        ease: 'power2.out'
+                    });
+                }
+
+                if (currentSection && currentSection !== targetSection) {
+                    gsap.to(currentSection, {
+                        opacity: 0,
+                        duration: 0.5,
+                        ease: "power2.out",
+                        onComplete: () => {
+                            currentSection.classList.remove('active');
+                            currentSection.style.visibility = 'hidden';
+                            targetSection.classList.add('active');
+                            targetSection.style.visibility = 'visible';
+                            gsap.fromTo(targetSection, 
+                                { opacity: 0 },
+                                { 
+                                    opacity: 1, 
+                                    duration: 0.5, 
+                                    ease: "power2.in"
+                                }
+                            );
+                        }
+                    });
+                } else if (!currentSection) {
+                    targetSection.classList.add('active');
+                    targetSection.style.visibility = 'visible';
+                    gsap.fromTo(targetSection, 
+                        { opacity: 0 },
+                        { 
+                            opacity: 1, 
+                            duration: 0.5, 
+                            ease: "power2.in"
+                        }
+                    );
+                }
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetSection = document.getElementById(link.dataset.section);
+                    const activeSection = document.querySelector('.section.active');
+                    switchSection(targetSection, activeSection);
+                });
+            });
+
+            articleLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetSection = document.getElementById(link.dataset.article);
+                    const activeSection = document.querySelector('.section.active');
+                    switchSection(targetSection, activeSection);
+                });
+            });
+
+            backButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetSection = document.getElementById(button.dataset.back);
+                    const activeSection = document.querySelector('.section.active');
+                    switchSection(targetSection, activeSection);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
